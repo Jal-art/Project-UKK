@@ -14,7 +14,7 @@ class KasirSeeder extends Seeder
         $kasir = Kasir::updateOrCreate(
             ['email' => 'kasir@example.com'],
             [
-                'nama_kasir' => 'Kasir Demo',
+                'nama_kasir' => 'Deny Hermawan',
                 'password'   => Hash::make('kasir123'),
             ]
         );

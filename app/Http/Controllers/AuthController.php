@@ -29,7 +29,9 @@ class AuthController extends Controller
             return redirect()->intended(route('dashboard'));
         }
 
-        return back()->withErrors(['email' => 'Email atau password salah.'])->onlyInput('email');
+        return back()
+            ->withErrors(['email' => 'Email atau password salah.'])
+            ->onlyInput('email');
     }
 
     public function logout(Request $request)
@@ -42,6 +44,11 @@ class AuthController extends Controller
 
     public function dashboard()
     {
-        return view('kasir.dashboard');
+        // Bisa inject data nyata nanti
+        return view('kasir.dashboard', [
+            'stokCount' => 400,
+            'transaksiCount' => 30,
+            'terjualCount' => 40,
+        ]);
     }
 }

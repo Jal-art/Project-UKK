@@ -1,24 +1,35 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProdukController;
 
-// Auth (login/logout)
+/**
+ * Root: ke login bila belum login, atau ke dashboard bila sudah.
+ */
+Route::get('/', function () {
+    return Auth::check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login.show');
+})->name('home');
+
+/** Auth */
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login.show');
 Route::post('/login', [AuthController::class, 'login'])->name('login.process');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// "/" langsung ke dashboard (kalau belum login, middleware akan arahkan ke /login)
-Route::get('/', function () {
-    return redirect()->route('dashboard');
-})->name('home');
-
-// Hanya yang sudah login
+/** Hanya user login */
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Nanti tambahkan menu lain di sini:
-    // Route::resource('produk', ProdukController::class);
-    // Route::resource('transaksi', TransaksiController::class);
-    // Route::get('laporan', [LaporanController::class, 'index'])->name('laporan.index');
+    // Produk aktif (sidebar mengarah ke route ini)
+    Route::resource('produk', ProdukController::class)
+         ->parameters(['produk' => 'produk']);
+});
+
+/** Fallback */
+Route::fallback(function () {
+    return redirect()->route('login.show');
 });
