@@ -60,15 +60,31 @@
     .tb-right{display:flex;align-items:center;gap:12px;position:relative}
     .store-name{font-size:14px;color:#4b5563;user-select:none}
 
-    /* Welcome kiri topbar */
+    /* Welcome kiri topbar (teks polos, bukan card/chip) */
     .welcome-top{
-      display:flex;align-items:center;gap:8px;min-width:0;
-      padding:6px 10px;border:1px solid #d8dee5;border-radius:999px;background:#f9fafb;
-      color:#374151;font-size:13px
+      display:block;
+      padding:0;
+      border:none;
+      border-radius:0;
+      background:transparent;
+      color:#374151;
+      font-size:14px;
+      line-height:1.2;
+      min-width:0;
     }
-    .welcome-top .who{font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:28vw}
-    @media (max-width:820px){ .welcome-top .who{max-width:22vw} }
-    @media (max-width:520px){ .welcome-top{display:none} }
+    .welcome-top .who{
+      font-weight:700;
+      color:#111;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:28vw;
+    }
+    @media (max-width:820px){ .welcome-top .who{max-width:50vw} }
+    @media (max-width:520px){
+      .welcome-top{font-size:13px}
+      .welcome-top .who{max-width:52vw}
+    }
 
     /* User chip + caret-only dropdown */
     .user-chip{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e5e7eb;border-radius:999px;padding:6px 10px;box-shadow:var(--shadow)}
@@ -164,9 +180,9 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M6 7l1-3h10l1 3M6 7h12l-1 10H7L6 7zm3 4h6" stroke="currentColor" stroke-width="1.5"/></svg>
         <span class="text">Produk</span>
       </a>
-      <a href="#" aria-disabled="true" style="opacity:.6;pointer-events:none;">
+      <a href="{{ route('transaksi.index') }}">
         <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M7 11h10M9 15h6M6 19h12" stroke="currentColor" stroke-width="1.5"/></svg>
-        <span class="text">Transaksi (nanti)</span>
+        <span class="text">Transaksi</span>
       </a>
       <a href="#" aria-disabled="true" style="opacity:.6;pointer-events:none;">
         <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 19V5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="1.5"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.5"/></svg>
@@ -187,7 +203,7 @@
           $initials = mb_strtoupper($initials);
         @endphp
         <div class="welcome-top" role="status" aria-live="polite" title="Selamat datang di Cashify">
-          <span>Selamat datang di <strong>Cashify</strong>, <span class="who">{{ $nama }}</span></span>
+          Selamat datang di <strong>Cashify</strong>
         </div>
       </div>
 

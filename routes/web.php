@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\TransaksiController;
 
 /**
  * Root: ke login bila belum login, atau ke dashboard bila sudah.
@@ -24,9 +25,18 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Produk aktif (sidebar mengarah ke route ini)
+    // Produk
     Route::resource('produk', ProdukController::class)
          ->parameters(['produk' => 'produk']);
+
+    // Transaksi
+    Route::resource('transaksi', TransaksiController::class)
+         ->parameters(['transaksi' => 'transaksi'])
+         ->except(['edit','update']); // kita tidak pakai edit/update di versi ini
+
+    // Struk (lihat/print)
+    Route::get('/transaksi/{transaksi}/struk', [TransaksiController::class, 'struk'])
+         ->name('transaksi.struk');
 });
 
 /** Fallback */

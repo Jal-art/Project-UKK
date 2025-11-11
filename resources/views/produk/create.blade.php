@@ -14,7 +14,7 @@
   @endif
 
   <div class="box">
-    <form method="POST" action="{{ route('produk.store') }}" novalidate>
+    <form method="POST" action="{{ route('produk.store') }}" novalidate autocomplete="off">
       @csrf
 
       <div class="fld">
@@ -27,6 +27,8 @@
           value="{{ old('nama_produk') }}"
           required
           autofocus
+          autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text"
+          data-no-suggest
         >
         @error('nama_produk') <div class="hint-err">{{ $message }}</div> @enderror
       </div>
@@ -39,6 +41,8 @@
           class="in @error('ukuran') bad @enderror"
           placeholder="Masukkan Ukuran Produk"
           value="{{ old('ukuran') }}"
+          autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text"
+          data-no-suggest
         >
         @error('ukuran') <div class="hint-err">{{ $message }}</div> @enderror
       </div>
@@ -51,6 +55,8 @@
           class="in @error('warna') bad @enderror"
           placeholder="Masukkan Warna Produk"
           value="{{ old('warna') }}"
+          autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text"
+          data-no-suggest
         >
         @error('warna') <div class="hint-err">{{ $message }}</div> @enderror
       </div>
@@ -63,6 +69,7 @@
           class="in @error('stok') bad @enderror"
           placeholder="Masukkan Stok Produk"
           value="{{ old('stok') }}"
+          autocomplete="off" inputmode="numeric"
         >
         @error('stok') <div class="hint-err">{{ $message }}</div> @enderror
       </div>
@@ -75,6 +82,7 @@
           class="in @error('harga') bad @enderror"
           placeholder="Masukkan Harga Produk"
           value="{{ old('harga') }}"
+          autocomplete="off"
         >
         @error('harga') <div class="hint-err">{{ $message }}</div> @enderror
         <div class="hint">Masukkan angka saja (tanpa titik/koma).</div>
@@ -118,9 +126,30 @@
     .btn:active{transform:translateY(2px); box-shadow:0 4px 0 rgba(0,0,0,.20), 0 10px 16px rgba(0,0,0,.12)}
     .btn-purple{background:#6d5cff}
     .btn-green{background:#22c55e}
-    @media(max-width:560px){
-      .actions{flex-direction:column}
-      .btn{width:100%; text-align:center}
+    @media(max-width:560px){ .actions{flex-direction:column} .btn{width:100%; text-align:center} }
+
+    /* Opsional: hilangkan highlight autofill */
+    input:-webkit-autofill{
+      transition: background-color 9999s ease-out, color 9999s ease-out;
+      -webkit-text-fill-color: inherit !important;
     }
   </style>
+
+  {{-- Matikan suggestion bawaan browser --}}
+  <script>
+  (() => {
+    const els = document.querySelectorAll('input[data-no-suggest]');
+    els.forEach(el => {
+      el.readOnly = true;                        // kunci saat load
+      el.addEventListener('focus', () => el.readOnly = false, { once: true });
+    });
+    // Abaikan password manager/extension
+    requestAnimationFrame(() => {
+      document.querySelectorAll('input').forEach(i => {
+        if (i.autocomplete !== 'off') i.setAttribute('autocomplete','off');
+        i.setAttribute('data-lpignore','true');
+      });
+    });
+  })();
+  </script>
 @endsection

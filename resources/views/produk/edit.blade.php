@@ -5,7 +5,6 @@
 @section('content')
   <h2 class="ttl">Edit Produk</h2>
 
-  {{-- alert sukses / error (opsional) --}}
   @if(session('ok'))
     <div class="alert ok">{{ session('ok') }}</div>
   @endif
@@ -14,7 +13,7 @@
   @endif
 
   <div class="box">
-    <form method="POST" action="{{ route('produk.update',$produk) }}" novalidate>
+    <form method="POST" action="{{ route('produk.update',$produk) }}" novalidate autocomplete="off">
       @csrf @method('PUT')
 
       <div class="fld">
@@ -27,6 +26,8 @@
           value="{{ old('nama_produk', $produk->nama_produk) }}"
           required
           autofocus
+          autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text"
+          data-no-suggest
         >
         @error('nama_produk') <div class="hint-err">{{ $message }}</div> @enderror
       </div>
@@ -39,6 +40,8 @@
           class="in @error('ukuran') bad @enderror"
           placeholder="Ukuran Produk"
           value="{{ old('ukuran', $produk->ukuran) }}"
+          autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text"
+          data-no-suggest
         >
         @error('ukuran') <div class="hint-err">{{ $message }}</div> @enderror
       </div>
@@ -51,6 +54,8 @@
           class="in @error('warna') bad @enderror"
           placeholder="Warna Produk"
           value="{{ old('warna', $produk->warna) }}"
+          autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text"
+          data-no-suggest
         >
         @error('warna') <div class="hint-err">{{ $message }}</div> @enderror
       </div>
@@ -63,6 +68,7 @@
           class="in @error('stok') bad @enderror"
           placeholder="Stok Produk"
           value="{{ old('stok', $produk->stok) }}"
+          autocomplete="off" inputmode="numeric"
         >
         @error('stok') <div class="hint-err">{{ $message }}</div> @enderror
       </div>
@@ -75,6 +81,7 @@
           class="in @error('harga') bad @enderror"
           placeholder="Harga Produk"
           value="{{ old('harga', (int)$produk->harga) }}"
+          autocomplete="off"
         >
         @error('harga') <div class="hint-err">{{ $message }}</div> @enderror
         <div class="hint">Masukkan angka saja (tanpa titik/koma).</div>
@@ -87,7 +94,6 @@
     </form>
   </div>
 
-  {{-- gaya kecil agar mirip screenshot & nyaman dipakai --}}
   <style>
     .ttl{margin:0 0 12px;font-weight:600;color:#1f2937}
     .box{
@@ -118,12 +124,28 @@
     .btn:active{transform:translateY(2px); box-shadow:0 4px 0 rgba(0,0,0,.20), 0 10px 16px rgba(0,0,0,.12)}
     .btn-purple{background:#6d5cff}
     .btn-green{background:#22c55e}
-    .alert{margin:0 0 10px;padding:10px 12px;border-radius:10px;font-size:14px}
-    .alert.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
-    .alert.err{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
-    @media(max-width:560px){
-      .actions{flex-direction:column}
-      .btn{width:100%; text-align:center}
+    @media(max-width:560px){ .actions{flex-direction:column} .btn{width:100%; text-align:center} }
+
+    /* Opsional: hilangkan highlight autofill */
+    input:-webkit-autofill{
+      transition: background-color 9999s ease-out, color 9999s ease-out;
+      -webkit-text-fill-color: inherit !important;
     }
   </style>
+
+  <script>
+  (() => {
+    const els = document.querySelectorAll('input[data-no-suggest]');
+    els.forEach(el => {
+      el.readOnly = true;
+      el.addEventListener('focus', () => el.readOnly = false, { once: true });
+    });
+    requestAnimationFrame(() => {
+      document.querySelectorAll('input').forEach(i => {
+        if (i.autocomplete !== 'off') i.setAttribute('autocomplete','off');
+        i.setAttribute('data-lpignore','true');
+      });
+    });
+  })();
+  </script>
 @endsection

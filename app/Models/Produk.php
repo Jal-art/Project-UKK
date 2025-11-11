@@ -6,20 +6,29 @@ use Illuminate\Database\Eloquent\Model;
 
 class Produk extends Model
 {
-    // Sesuai migration
-    protected $table = 'produks';
-    protected $primaryKey = 'id_produk';
+    // ====== SESUAI MIGRATIONMU ======
+    // Tabel & Primary Key
+    protected $table = 'produks';            // ubah jika tabelmu beda
+    protected $primaryKey = 'id_produk';     // pk di migrationmu
+
     public $incrementing = true;
     protected $keyType = 'int';
+    public $timestamps = true;               // set false kalau tabelmu tanpa timestamps
 
-    // Kolom yang bisa diisi mass-assignment
-    protected $fillable = [
-        'nama_produk', 'ukuran', 'warna', 'harga', 'stok',
-    ];
+    // Mass assignment
+    protected $fillable = ['nama_produk','ukuran','warna','harga','stok'];
 
-    // Casting harga biar enak dipakai sebagai decimal/float
+    // Casting tipe data angka
     protected $casts = [
-        'harga' => 'decimal:2',
+        'harga' => 'integer',
         'stok'  => 'integer',
     ];
+
+    // Pencarian nama saja (permintaanmu)
+    public function scopeCari($q, $term)
+    {
+        $term = trim((string) $term);
+        if ($term === '') return $q;
+        return $q->where('nama_produk', 'like', "%{$term}%");
+    }
 }

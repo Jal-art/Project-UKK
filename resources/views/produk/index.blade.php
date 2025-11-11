@@ -3,7 +3,6 @@
 @section('title','Produk | Cashify')
 
 @section('content')
-  {{-- Judul halaman --}}
   <h2 style="margin:0 0 12px;font-weight:600;color:#111">Produk</h2>
 
   <div class="produk-panel">
@@ -13,14 +12,20 @@
         <span class="plus">+</span> Tambah Produk
       </a>
 
-      <form method="GET" action="{{ route('produk.index') }}" class="search">
+      <form class="search" onsubmit="return false" autocomplete="off">
         <input
+          id="searchNama"
           class="search-input"
           type="text"
           name="q"
-          value="{{ request('q') }}"
-          placeholder="Cari nama / warna / ukuran" />
-        <button class="search-btn" type="submit" aria-label="Cari">
+          value="{{ $q ?? '' }}"
+          placeholder="Cari nama ..."
+          inputmode="text"
+          pattern="[\p{L}\s]*"
+          title="Hanya huruf dan spasi"
+          oninput="this.value = this.value.normalize('NFC').replace(/[^\p{L}\s]/gu,'')"
+        />
+        <button class="search-btn" type="button" aria-label="Cari" id="btnSearch">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <circle cx="11" cy="11" r="7" stroke="#111" stroke-width="1.7"/>
             <path d="M20 20l-3.2-3.2" stroke="#111" stroke-width="1.7"/>
@@ -29,7 +34,7 @@
       </form>
     </div>
 
-    {{-- Tabel Produk --}}
+    {{-- Tabel Produk (TANPA kolom No) --}}
     <div class="table-shell">
       <table class="produk-table">
         <thead>
@@ -44,7 +49,7 @@
           </tr>
         </thead>
 
-        <tbody>
+        <tbody id="produkTbody">
         @forelse($produks as $p)
           <tr>
             <td class="id-cell">{{ $p->id_produk }}</td>
@@ -56,8 +61,6 @@
             <td>
               <div class="aksi">
                 <a href="{{ route('produk.edit',$p) }}" class="badge badge-green">edit</a>
-
-                {{-- Tombol Hapus -> buka modal konfirmasi (gaya sama dengan logout) --}}
                 <button
                   type="button"
                   class="badge badge-red btn-open-del"
@@ -81,24 +84,24 @@
 
     {{-- Info & Pagination --}}
     <div class="panel-footer">
-      <div class="hint">
+      <div class="hint" id="produkHint">
         @if($produks instanceof \Illuminate\Pagination\LengthAwarePaginator)
           Menampilkan <b>{{ $produks->count() }}</b> dari <b>{{ $produks->total() }}</b> item
-          @if(request('q')) untuk pencarian “{{ request('q') }}” @endif
+          @if($q) untuk pencarian “{{ $q }}” @endif
         @else
           Total <b>{{ $produks->count() }}</b> item
         @endif
       </div>
 
       @if(method_exists($produks,'links'))
-        <div class="pagi">
+        <div class="pagi" id="pagiWrap">
           {{ $produks->withQueryString()->links() }}
         </div>
       @endif
     </div>
   </div>
 
-  {{-- Modal Konfirmasi Hapus (reuse style modal Logout dari layout) --}}
+  {{-- Modal Konfirmasi Hapus (sama gaya dengan logout) --}}
   <div id="delBackdrop" class="modal-backdrop" aria-hidden="true">
     <div id="delModal" class="modal" role="dialog" aria-modal="true"
          aria-labelledby="delTitle" aria-describedby="delDesc" tabindex="-1">
@@ -184,54 +187,171 @@
     }
   </style>
 
-  {{-- Script modal hapus (match animasi modal logout) --}}
+  {{-- Script: live search, pagination AJAX, modal hapus --}}
   <script>
   (() => {
-    const openBtns   = document.querySelectorAll('.btn-open-del');
-    const backdrop   = document.getElementById('delBackdrop');
-    const modal      = document.getElementById('delModal');
-    const delForm    = document.getElementById('delForm');
-    const delNameBox = document.getElementById('delName');
-    const btnCancel  = document.getElementById('btnCancelDel');
-    const OUT_MS     = 220; // sama dengan modal logout di layout
-    let lastFocused  = null;
+    const input     = document.getElementById('searchNama');
+    const btnSearch = document.getElementById('btnSearch');
+    const tbody     = document.getElementById('produkTbody');
+    const hintBox   = document.getElementById('produkHint');
+    const pagiWrap  = document.getElementById('pagiWrap');
+    let typingDelay = null;
+    let lastQuery   = (input?.value ?? '').trim();
 
-    function openDel(action, name) {
-      lastFocused = document.activeElement;
-      delForm.setAttribute('action', action);
-      delNameBox.textContent = name || '(tanpa nama)';
-      backdrop.classList.add('show');
-      modal.classList.remove('hiding');
-      setTimeout(() => delForm.querySelector('button[type="submit"]')?.focus(), 0);
-      backdrop.removeAttribute('aria-hidden');
+    function cleanText(s=''){
+      return s.normalize('NFC')
+              .replace(/[^\p{L}\s]/gu,'')
+              .replace(/\s+/g,' ')
+              .trim();
     }
-    function closeDel() {
-      modal.classList.add('hiding');
-      setTimeout(() => {
-        backdrop.classList.remove('show');
-        backdrop.setAttribute('aria-hidden','true');
+
+    function escapeHtml(s=''){
+      return s.replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+
+    function fetchList(urlOrQuery){
+      let url;
+      if (typeof urlOrQuery === 'string' && urlOrQuery.startsWith('http')){
+        url = new URL(urlOrQuery);
+        const q = cleanText(url.searchParams.get('q') || '');
+        if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+      } else {
+        url = new URL(`{{ route('produk.index') }}`);
+        const q = cleanText(typeof urlOrQuery === 'string' ? urlOrQuery : (input?.value ?? ''));
+        if (q) url.searchParams.set('q', q);
+      }
+      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(json => render(json, url.searchParams.get('q') || ''))
+        .catch(() => {});
+    }
+
+    function render(data, q){
+      const items = data.items || [];
+      const rows = items.length ? items.map((p) => `
+        <tr>
+          <td class="id-cell">${p.id_produk}</td>
+          <td class="nama-cell">${escapeHtml(p.nama_produk)}</td>
+          <td>${escapeHtml(p.ukuran)}</td>
+          <td>${escapeHtml(p.warna)}</td>
+          <td class="harga">Rp ${p.harga}</td>
+          <td class="stok">${p.stok}</td>
+          <td>
+            <div class="aksi">
+              <a href="${p.edit_url}" class="badge badge-green">edit</a>
+              <button type="button" class="badge badge-red btn-open-del" data-action="${p.del_url}" data-name="${escapeHtml(p.nama_produk)}">hapus</button>
+            </div>
+          </td>
+        </tr>
+      `).join('') : `
+        <tr>
+          <td colspan="7" class="empty">
+            <div class="empty-box">Tidak ada data produk.</div>
+          </td>
+        </tr>
+      `;
+      tbody.innerHTML = rows;
+
+      // Hint
+      if (hintBox && data.meta) {
+        const base = `Menampilkan <b>${data.meta.count}</b> dari <b>${data.meta.total}</b> item`;
+        hintBox.innerHTML = q ? `${base} untuk pencarian “${escapeHtml(q)}”` : base;
+      }
+
+      // Pagination
+      if (pagiWrap) {
+        pagiWrap.innerHTML = data.pagination_html || '';
+        bindPagination();
+      }
+
+      // Re-bind tombol hapus
+      bindDeleteButtons();
+    }
+
+    function bindPagination(){
+      if (!pagiWrap) return;
+      const links = pagiWrap.querySelectorAll('a[href]');
+      links.forEach(a => {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          fetchList(a.href);
+        });
+      });
+    }
+
+    function bindDeleteButtons(){
+      const openBtns   = document.querySelectorAll('.btn-open-del');
+      const backdrop   = document.getElementById('delBackdrop');
+      const modal      = document.getElementById('delModal');
+      const delForm    = document.getElementById('delForm');
+      const delNameBox = document.getElementById('delName');
+      const btnCancel  = document.getElementById('btnCancelDel');
+      const OUT_MS     = 220;
+      let lastFocused  = null;
+
+      function openDel(action, name) {
+        lastFocused = document.activeElement;
+        delForm.setAttribute('action', action);
+        delNameBox.textContent = name || '(tanpa nama)';
+        backdrop.classList.add('show');
         modal.classList.remove('hiding');
-        lastFocused?.focus();
-      }, OUT_MS);
+        setTimeout(() => delForm.querySelector('button[type="submit"]')?.focus(), 0);
+        backdrop.removeAttribute('aria-hidden');
+      }
+      function closeDel() {
+        modal.classList.add('hiding');
+        setTimeout(() => {
+          backdrop.classList.remove('show');
+          backdrop.setAttribute('aria-hidden','true');
+          modal.classList.remove('hiding');
+          lastFocused?.focus();
+        }, OUT_MS);
+      }
+
+      openBtns.forEach(btn => {
+        btn.addEventListener('click', () => openDel(btn.dataset.action, btn.dataset.name));
+      });
+      btnCancel?.addEventListener('click', closeDel);
+      backdrop?.addEventListener('click', (e) => { if (e.target === backdrop) closeDel(); });
+      addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && backdrop?.classList.contains('show')) { e.preventDefault(); closeDel(); }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Tab' || !backdrop?.classList.contains('show')) return;
+        const f = modal.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+        const first = f[0], last = f[f.length-1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      });
     }
 
-    openBtns.forEach(btn => {
-      btn.addEventListener('click', () => openDel(btn.dataset.action, btn.dataset.name));
-    });
-    btnCancel?.addEventListener('click', closeDel);
-    backdrop?.addEventListener('click', (e) => { if (e.target === backdrop) closeDel(); });
-    addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && backdrop?.classList.contains('show')) { e.preventDefault(); closeDel(); }
+    // Debounce input search (huruf saja)
+    input?.addEventListener('input', () => {
+      clearTimeout(typingDelay);
+      typingDelay = setTimeout(() => {
+        const now = cleanText(input.value);
+        if (now !== lastQuery){
+          lastQuery = now;
+          fetchList(now);
+        }
+      }, 250);
     });
 
-    // Focus trap sederhana
-    document.addEventListener('keydown', (e) => {
-      if (e.key !== 'Tab' || !backdrop?.classList.contains('show')) return;
-      const f = modal.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
-      const first = f[0], last = f[f.length-1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    // Tombol search
+    btnSearch?.addEventListener('click', () => {
+      const now = cleanText(input.value);
+      if (now !== lastQuery){
+        lastQuery = now;
+        fetchList(now);
+      }
     });
+
+    // Init
+    bindPagination();
+    bindDeleteButtons();
   })();
   </script>
 @endsection
