@@ -4,7 +4,6 @@
 @section('content')
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
     <h2 style="margin:0;font-weight:600;color:#111">Tambah Transaksi</h2>
-    {{-- HAPUS tombol kembali di header --}}
   </div>
 
   @if ($errors->any())
@@ -35,8 +34,9 @@
               @endforeach
             </select>
             <input id="qtyInput" class="in" type="number" min="1" step="1" value="1" style="max-width:120px;background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:10px 12px;font-size:14px;outline:none">
-            {{-- Tambah = HIJAU (tema Produk) --}}
-            <button type="button" id="btnAdd" class="btn green" style="border:none;border-radius:10px;padding:10px 14px;font-weight:700;color:#fff;background:#22c55e;cursor:pointer">Tambah</button>
+
+            {{-- Tombol Tambah (tema sama, warna hijau) --}}
+            <button type="button" id="btnAdd" class="btn btn-green">Tambah</button>
           </div>
           <div id="stokInfo" class="hint" style="margin-top:6px;color:#6b7280;font-size:12.5px"></div>
         </div>
@@ -85,19 +85,35 @@
       {{-- field hidden items[] untuk submit --}}
       <div id="itemsHolder"></div>
 
-      {{-- FOOTER FORM: Kembali kiri (UNGU), Bayar kanan (HIJAU) --}}
+      {{-- Footer form: Kembali (abu), Bayar (hijau) --}}
       <div style="display:flex;justify-content:space-between;gap:10px;margin-top:14px;flex-wrap:wrap">
-        <a href="{{ route('transaksi.index') }}"
-           class="btn"
-           style="background:#6d5cff;color:#fff;text-decoration:none;border:none;border-radius:10px;padding:10px 18px;font-weight:700">
-           Kembali
-        </a>
-        <button type="submit" class="btn" style="background:#22c55e;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700">
-          Bayar
-        </button>
+        <a href="{{ route('transaksi.index') }}" class="btn btn-gray">Kembali</a>
+        <button type="submit" class="btn btn-green">Bayar</button>
       </div>
     </form>
   </div>
+
+  {{-- === Styles tombol: disamakan dengan create/edit produk === --}}
+  <style>
+    .btn{
+      border:none; cursor:pointer; padding:10px 18px; border-radius:999px;
+      font-weight:600; letter-spacing:.2px; color:#fff; text-decoration:none; display:inline-block;
+      box-shadow:0 6px 0 rgba(0,0,0,.22), 0 12px 18px rgba(0,0,0,.14);
+      transition:transform .06s ease, box-shadow .12s ease, opacity .2s ease;
+    }
+    .btn:hover{opacity:.96}
+    .btn:active{transform:translateY(2px); box-shadow:0 4px 0 rgba(0,0,0,.20), 0 10px 16px rgba(0,0,0,.12)}
+    .btn-green{background:#22c55e}
+    .btn-gray{background:#6b7280}
+
+    .badge-del{
+      border:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+      padding:6px 10px; border-radius:999px; font-weight:700; font-size:12.5px; color:#fff; background:#ef4444;
+      box-shadow:0 2px 0 rgba(0,0,0,.06) inset; transition:transform .06s, opacity .12s;
+    }
+    .badge-del:hover{opacity:.96}
+    .badge-del:active{transform:translateY(1px)}
+  </style>
 
   <script>
     (() => {
@@ -143,7 +159,7 @@
               <td class="num" style="font-weight:700;color:#111;text-align:right;padding:10px 12px;border-bottom:1px solid #f0f2f5">${item.qty}</td>
               <td class="num" style="font-weight:700;color:#111;text-align:right;padding:10px 12px;border-bottom:1px solid #f0f2f5">${rupiah(sub)}</td>
               <td style="padding:10px 12px;border-bottom:1px solid #f0f2f5">
-                <button type="button" class="badge-del" data-id="${pid}" style="background:#ef4444;border:none;color:#fff;padding:6px 10px;border-radius:999px;cursor:pointer;font-weight:700">hapus</button>
+                <button type="button" class="badge-del" data-id="${pid}">hapus</button>
               </td>
             `;
             body.appendChild(row);

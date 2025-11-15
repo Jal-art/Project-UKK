@@ -5,7 +5,6 @@
 @section('content')
   <h2 class="ttl">Tambah Produk</h2>
 
-  {{-- alert sukses / error (opsional) --}}
   @if(session('ok'))
     <div class="alert ok">{{ session('ok') }}</div>
   @endif
@@ -89,13 +88,13 @@
       </div>
 
       <div class="actions">
-        <a href="{{ route('produk.index') }}" class="btn btn-purple" aria-label="Kembali ke daftar produk">Kembali</a>
+        {{-- tombol kembali sekarang abu-abu --}}
+        <a href="{{ route('produk.index') }}" class="btn btn-gray" aria-label="Kembali ke daftar produk">Kembali</a>
         <button type="submit" class="btn btn-green">Simpan</button>
       </div>
     </form>
   </div>
 
-  {{-- style kecil agar mirip screenshot & nyaman dipakai --}}
   <style>
     .ttl{margin:0 0 12px;font-weight:600;color:#1f2937}
     .box{
@@ -124,26 +123,23 @@
     }
     .btn:hover{opacity:.96}
     .btn:active{transform:translateY(2px); box-shadow:0 4px 0 rgba(0,0,0,.20), 0 10px 16px rgba(0,0,0,.12)}
-    .btn-purple{background:#6d5cff}
     .btn-green{background:#22c55e}
+    .btn-gray{background:#6b7280} /* <— abu-abu */
     @media(max-width:560px){ .actions{flex-direction:column} .btn{width:100%; text-align:center} }
 
-    /* Opsional: hilangkan highlight autofill */
     input:-webkit-autofill{
       transition: background-color 9999s ease-out, color 9999s ease-out;
       -webkit-text-fill-color: inherit !important;
     }
   </style>
 
-  {{-- Matikan suggestion bawaan browser --}}
   <script>
   (() => {
     const els = document.querySelectorAll('input[data-no-suggest]');
     els.forEach(el => {
-      el.readOnly = true;                        // kunci saat load
+      el.readOnly = true;
       el.addEventListener('focus', () => el.readOnly = false, { once: true });
     });
-    // Abaikan password manager/extension
     requestAnimationFrame(() => {
       document.querySelectorAll('input').forEach(i => {
         if (i.autocomplete !== 'off') i.setAttribute('autocomplete','off');

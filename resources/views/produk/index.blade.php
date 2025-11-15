@@ -60,7 +60,8 @@
             <td class="stok">{{ (int)$p->stok }}</td>
             <td>
               <div class="aksi">
-                <a href="{{ route('produk.edit',$p) }}" class="badge badge-green">edit</a>
+                {{-- EDIT -> kuning --}}
+                <a href="{{ route('produk.edit',$p) }}" class="badge badge-yellow">edit</a>
                 <button
                   type="button"
                   class="badge badge-red btn-open-del"
@@ -135,13 +136,15 @@
       padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.05), 0 8px 18px rgba(0,0,0,.08);
     }
     .panel-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+
+    /* Tambah -> HIJAU */
     .btn-add{
-      display:inline-flex;align-items:center;gap:8px;background:#6d5cff;color:#fff;text-decoration:none;
+      display:inline-flex;align-items:center;gap:8px;background:#22c55e;color:#fff;text-decoration:none;
       padding:9px 14px;border-radius:999px;font-weight:600;
-      box-shadow:0 6px 14px rgba(109,92,255,.24), 0 2px 0 rgba(0,0,0,.08) inset;
+      box-shadow:0 6px 14px rgba(34,197,94,.24), 0 2px 0 rgba(0,0,0,.08) inset;
       transition:transform .06s, box-shadow .15s, opacity .15s;
     }
-    .btn-add:hover{opacity:.98;box-shadow:0 8px 18px rgba(109,92,255,.3)}
+    .btn-add:hover{opacity:.98;box-shadow:0 8px 18px rgba(34,197,94,.3)}
     .btn-add:active{transform:translateY(1px)}
     .btn-add .plus{display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:rgba(255,255,255,.2);font-weight:800;line-height:1}
 
@@ -171,7 +174,9 @@
     }
     .badge:hover{opacity:.96}
     .badge:active{transform:translateY(1px)}
-    .badge-green{background:#22c55e}
+    /* EDIT -> kuning */
+    .badge-yellow{background:#f59e0b}
+    .badge-yellow:hover{opacity:.98}
     .badge-red{background:#ef4444}
 
     .empty{text-align:center;color:#6b7280}
@@ -240,7 +245,7 @@
           <td class="stok">${p.stok}</td>
           <td>
             <div class="aksi">
-              <a href="${p.edit_url}" class="badge badge-green">edit</a>
+              <a href="${p.edit_url}" class="badge badge-yellow">edit</a>
               <button type="button" class="badge badge-red btn-open-del" data-action="${p.del_url}" data-name="${escapeHtml(p.nama_produk)}">hapus</button>
             </div>
           </td>

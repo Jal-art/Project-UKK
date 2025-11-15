@@ -1,94 +1,126 @@
 @extends('layouts.cashify')
-@section('title','Struk | Cashify')
+@section('title','Struk Transaksi | Cashify')
 
 @section('content')
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-    <h2 style="margin:0;font-weight:600;color:#111">Struk Pembayaran</h2>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a href="{{ route('transaksi.index') }}" class="btn-add" style="background:#374151"><span class="plus">←</span> Kembali</a>
-      <button onclick="window.print()" class="btn-add"><span class="plus">🖨</span> Cetak</button>
+  {{-- Header (disembunyikan saat print) --}}
+  <div class="screen-toolbar no-print">
+    <h2 class="ttl">Struk #{{ $displayNo }} ({{ $transaksi->kode ?? ('TRX-'.$transaksi->id_transaksi) }})</h2>
+    <div class="btns">
+      <a href="{{ route('transaksi.index') }}" class="btn btn-gray">Kembali</a>
+      <button type="button" onclick="window.print()" class="btn btn-purple">Cetak</button>
     </div>
   </div>
 
-  @if(session('ok'))
-    <div class="alert ok">{{ session('ok') }}</div>
-  @endif
+  {{-- Area struk yang diprint --}}
+  <div id="printArea" class="ticket">
+    {{-- Header toko --}}
+    <div class="center bold up">{{ strtoupper(config('app.store_name', config('app.name','TOKO'))) }}</div>
+    <div class="center small muted">
+      {{ config('app.store_address','Jl. Contoh No. 123 - Kota') }}<br>
+      Telp. {{ config('app.store_phone','08xx-xxxx-xxxx') }}
+    </div>
 
-  <div class="paper" id="receipt">
-    <div class="r-head">
-      <div class="brand">Cashify Store</div>
-      <div class="meta">
-        <div>Kode: <b>{{ $receipt['kode'] ?? $transaksi->kode }}</b></div>
-        <div>Tanggal: <b>{{ $receipt['created_at'] ?? $transaksi->created_at?->format('d/m/Y H:i') }}</b></div>
-        <div>Kasir: <b>{{ $receipt['kasir'] ?? (auth()->user()->nama_kasir ?? 'Kasir') }}</b></div>
+    {{-- Tanggal --}}
+    <div class="center small" style="margin-top:6px">
+      {{ \Carbon\Carbon::parse($transaksi->tanggal)->locale('id')->translatedFormat('l, d/m/Y H:i') }}
+    </div>
+
+    <div class="sep"></div>
+
+    {{-- Daftar item --}}
+    @forelse($detail as $d)
+      @php
+        $nama   = $d->nama_produk ?? '(tanpa nama)';
+        $ukuran = $d->ukuran ?? null;
+        $warna  = $d->warna ?? null;
+        $harga  = (int)($d->harga_satuan ?? 0);
+        $qty    = (int)($d->jumlah ?? 0);
+        $sub    = (int)($d->sub_total ?? 0);
+      @endphp
+      <div class="row">
+        <div class="name">
+          {{ $nama }}@if($ukuran) • {{ $ukuran }}@endif @if($warna) • {{ $warna }}@endif
+        </div>
+        <div class="amt right">Rp {{ number_format($sub,0,',','.') }}</div>
       </div>
+      <div class="subrow">
+        Rp {{ number_format($harga,0,',','.') }}
+        <span class="xqty">x {{ $qty }}</span>
+      </div>
+    @empty
+      <div class="center muted">Detail item tidak tersedia.</div>
+    @endforelse
+
+    <div class="sep dotted"></div>
+
+    {{-- Ringkasan pembayaran --}}
+    <div class="row total">
+      <div class="name">Total Belanja</div>
+      <div class="amt right">Rp {{ number_format($transaksi->total_harga,0,',','.') }}</div>
+    </div>
+    <div class="row">
+      <div class="name">Tunai</div>
+      <div class="amt right">Rp {{ number_format($transaksi->uang_bayar,0,',','.') }}</div>
+    </div>
+    <div class="row">
+      <div class="name">Kembali</div>
+      <div class="amt right">Rp {{ number_format($transaksi->kembalian,0,',','.') }}</div>
     </div>
 
-    <div class="r-body">
-      <table>
-        <thead>
-          <tr><th>Item</th><th class="num">Qty</th><th class="num">Harga</th><th class="num">Subtotal</th></tr>
-        </thead>
-        <tbody>
-          @forelse(($receipt['items'] ?? []) as $it)
-            <tr>
-              <td>{{ $it['nama'] }}</td>
-              <td class="num">{{ $it['qty'] }}</td>
-              <td class="num">Rp {{ number_format($it['harga'],0,',','.') }}</td>
-              <td class="num">Rp {{ number_format($it['subtotal'],0,',','.') }}</td>
-            </tr>
-          @empty
-            <tr>
-              <td colspan="4" class="muted">Detail item tidak tersedia.</td>
-            </tr>
-          @endforelse
-        </tbody>
-        <tfoot>
-          <tr><th colspan="3" class="num">Total</th><th class="num">Rp {{ number_format(($receipt['total'] ?? $transaksi->total_harga),0,',','.') }}</th></tr>
-          <tr><th colspan="3" class="num">Bayar</th><th class="num">Rp {{ number_format(($receipt['bayar'] ?? $transaksi->uang_bayar),0,',','.') }}</th></tr>
-          <tr><th colspan="3" class="num">Kembalian</th><th class="num">Rp {{ number_format(($receipt['kembalian'] ?? $transaksi->kembalian),0,',','.') }}</th></tr>
-        </tfoot>
-      </table>
-    </div>
+    <div class="sep"></div>
 
-    <div class="r-foot">
-      Terima kasih telah berbelanja 🙏
+    {{-- Footer --}}
+    <div class="center small" style="margin-top:6px">Terima kasih</div>
+    <div class="center small muted">
+      kasir: {{ auth()->user()->nama_kasir ?? auth()->user()->name ?? 'Kasir' }}<br>
+      No. {{ $transaksi->kode ?? ('TRX-'.$transaksi->id_transaksi) }}
     </div>
   </div>
 
   <style>
-    .alert.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;margin-bottom:10px;padding:10px 12px;border-radius:10px}
-    .btn-add{
-      display:inline-flex;align-items:center;gap:8px;background:#6d5cff;color:#fff;text-decoration:none;
-      padding:9px 14px;border-radius:999px;font-weight:600;
-      box-shadow:0 6px 14px rgba(109,92,255,.24), 0 2px 0 rgba(0,0,0,.08) inset;
+    .screen-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+    .ttl{margin:0;font-weight:600;color:#111}
+    .btns{display:flex;gap:8px}
+    .btn{
+      border:none;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;
+      text-decoration:none;color:#fff;display:inline-block;
+      box-shadow:0 6px 0 rgba(0,0,0,.22), 0 12px 18px rgba(0,0,0,.14);
+      transition:transform .06s, box-shadow .12s, opacity .2s;
     }
-    .plus{display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:rgba(255,255,255,.2);font-weight:800;line-height:1}
+    .btn:hover{opacity:.96}
+    .btn:active{transform:translateY(2px); box-shadow:0 4px 0 rgba(0,0,0,.20), 0 10px 16px rgba(0,0,0,.12)}
+    .btn-gray{background:#6b7280}
+    .btn-purple{background:#6d5cff}
 
-    .paper{
-      max-width:720px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:16px;
-      box-shadow:0 1px 2px rgba(0,0,0,.05),0 10px 24px rgba(0,0,0,.12);
-      overflow:hidden
+    .ticket{
+      width: 302px;
+      margin: 0 auto;
+      padding: 8px 10px 12px;
+      background:#fff;color:#111;
+      border:1px solid #e5e7eb;border-radius:8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
+      font-size: 12px; line-height: 1.35;
+      word-break: break-word;
     }
-    .r-head{padding:16px 16px 0}
-    .brand{font-size:18px;font-weight:700;color:#111}
-    .meta{display:flex;gap:16px;flex-wrap:wrap;color:#374151;font-size:13px;margin-top:6px}
-    .r-body{padding:10px 16px 16px}
-    table{width:100%;border-collapse:separate;border-spacing:0}
-    thead th{background:#f3f4f6;text-align:left;font-weight:600;color:#111;padding:10px;border-bottom:1px solid #e5e7eb}
-    tbody td{padding:10px;border-bottom:1px solid #f5f6f8}
-    tfoot th{padding:10px;border-top:1px solid #e5e7eb;background:#fafafa}
-    .num{text-align:right}
-    .muted{text-align:center;color:#6b7280}
-    .r-foot{padding:12px 16px;background:#f9fafb;border-top:1px solid #eef2f7;text-align:center;color:#374151;font-weight:600}
-
-    /* Print */
+    .center{text-align:center} .right{text-align:right}
+    .bold{font-weight:700} .up{text-transform:uppercase}
+    .small{font-size:11px} .muted{color:#6b7280}
+    .sep{border-top:1px solid #e5e7eb;margin:8px 0}
+    .sep.dotted{border-top:1px dashed #c7cbd1}
+    .row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .row .name{flex:1}
+    .row .amt{min-width:100px;text-align:right}
+    .subrow{display:flex;justify-content:space-between;padding-left:10px;color:#6b7280;margin-top:-2px;margin-bottom:4px}
+    .subrow .xqty{margin-left:auto}
+    .total .name,.total .amt{font-weight:700}
     @media print{
-      body{background:#fff}
-      .layout, .topbar, .footer{display:none !important}
-      .page{padding:0}
-      .paper{box-shadow:none;border:none;border-radius:0;max-width:100%}
-      a, button{display:none !important}
+      @page{ margin: 4mm }
+      body *{ visibility: hidden; }
+      #printArea, #printArea *{ visibility: visible; }
+      #printArea{ position:absolute; left:0; top:0; }
+      .no-print{ display:none !important; }
+      .ticket{ border:none;border-radius:0;width:58mm;padding:0 }
+      .sep{ margin:6px 0 }
     }
   </style>
 @endsection

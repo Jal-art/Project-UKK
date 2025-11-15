@@ -7,21 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 class DetailTransaksi extends Model
 {
     protected $table = 'detail_transaksis';
+    protected $primaryKey = 'id_detail_transaksi';
 
     protected $fillable = [
-        'transaksi_id',
-        'produk_id',
-        'qty',
-        'harga',   // harga satuan saat transaksi
+        'id_transaksi',
+        'id_produk',
+        'nama_produk',
+        'ukuran',
+        'warna',
+        'harga_satuan',
+        'jumlah',
+        'sub_total',
     ];
 
     public function transaksi()
     {
-        return $this->belongsTo(Transaksi::class, 'transaksi_id', 'id_transaksi');
+        return $this->belongsTo(Transaksi::class, 'id_transaksi', 'id_transaksi');
     }
 
     public function produk()
     {
-        return $this->belongsTo(Produk::class, 'produk_id', 'id_produk');
+        return $this->belongsTo(Produk::class, 'id_produk', 'id_produk');
     }
 }

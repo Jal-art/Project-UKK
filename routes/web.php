@@ -6,9 +6,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\LaporanController;
 
 /**
- * Root: ke login bila belum login, atau ke dashboard bila sudah.
+ * Root
  */
 Route::get('/', function () {
     return Auth::check()
@@ -32,11 +33,14 @@ Route::middleware('auth')->group(function () {
     // Transaksi
     Route::resource('transaksi', TransaksiController::class)
          ->parameters(['transaksi' => 'transaksi'])
-         ->except(['edit','update']); // kita tidak pakai edit/update di versi ini
+         ->except(['edit','update']);
 
-    // Struk (lihat/print)
+    // Struk transaksi
     Route::get('/transaksi/{transaksi}/struk', [TransaksiController::class, 'struk'])
          ->name('transaksi.struk');
+
+    // LAPORAN (index saja)
+    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
 });
 
 /** Fallback */
