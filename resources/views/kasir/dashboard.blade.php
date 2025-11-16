@@ -11,15 +11,8 @@
       <div class="head">Stok Produk</div>
       <div class="body">{{ $stokCount ?? 400 }}</div>
       <div class="foot">
-        <span>Item tersedia</span>
-        <a class="link" href="#" aria-disabled="true">Detail
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18l6-6-6-6"
-                  stroke="currentColor"
-                  stroke-width="1.7"
-                  stroke-linecap="round"/>
-          </svg>
-        </a>
+        <span class="meta">Item tersedia</span>
+        <span class="meta-pill">Ringkasan stok</span>
       </div>
     </article>
 
@@ -27,15 +20,8 @@
       <div class="head">Transaksi</div>
       <div class="body">{{ $transaksiCount ?? 30 }}</div>
       <div class="foot">
-        <span>Hari ini</span>
-        <a class="link" href="#" aria-disabled="true">Detail
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18l6-6-6-6"
-                  stroke="currentColor"
-                  stroke-width="1.7"
-                  stroke-linecap="round"/>
-          </svg>
-        </a>
+        <span class="meta">Hari ini</span>
+        <span class="meta-pill">Ringkasan transaksi</span>
       </div>
     </article>
 
@@ -43,27 +29,23 @@
       <div class="head">Telah Terjual</div>
       <div class="body">{{ $terjualCount ?? 40 }}</div>
       <div class="foot">
-        <span>Unit/hari</span>
-        <a class="link" href="#" aria-disabled="true">Detail
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18l6-6-6-6"
-                  stroke="currentColor"
-                  stroke-width="1.7"
-                  stroke-linecap="round"/>
-          </svg>
-        </a>
+        <span class="meta">Unit/hari</span>
+        <span class="meta-pill">Ringkasan penjualan</span>
       </div>
     </article>
   </div>
 
-  {{-- Animasi masuk dashboard --}}
+  {{-- Animasi & styling khusus dashboard --}}
   <style>
-    /* Judul dashboard juga pelan muncul */
+    /* Judul dashboard pelan muncul */
     .dash-title{
       opacity:0;
       transform: translateY(6px);
       animation: dashTitleIn .45s ease-out forwards;
       animation-delay: .03s;
+      margin-bottom: 14px;
+      font-weight: 600;
+      color:#111827;
     }
 
     @keyframes dashTitleIn{
@@ -77,7 +59,11 @@
       }
     }
 
-    /* Animasi hanya untuk kartu di dashboard (dash-cards) */
+    /* Kartu di dashboard aja yang dianimasikan */
+    .dash-cards{
+      margin-bottom: 4px;
+    }
+
     .dash-cards .card{
       opacity:0;
       transform: translateY(14px) scale(.97);
@@ -105,6 +91,41 @@
       }
     }
 
+    /* Sedikit perapihan isi card untuk dashboard */
+    .dash-cards .card .body{
+      font-size: 32px;
+      letter-spacing: .5px;
+    }
+
+    .dash-cards .card .foot{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      font-size: 12.5px;
+    }
+
+    .dash-cards .card .foot .meta{
+      color:#4b5563;
+      white-space:nowrap;
+    }
+
+    .dash-cards .card .foot .meta-pill{
+      padding:4px 10px;
+      border-radius:999px;
+      background:#e5e7eb;
+      border:1px solid #d1d5db;
+      font-size:12px;
+      font-weight:500;
+      color:#374151;
+      white-space:nowrap;
+    }
+
+    /* Biar ga kerasa link/klik */
+    .dash-cards .card .foot .meta-pill{
+      cursor: default;
+    }
+
     /* Kalau user prefer reduce motion, matikan animasi */
     @media (prefers-reduced-motion: reduce){
       .dash-title{
@@ -116,6 +137,17 @@
         opacity:1 !important;
         transform:none !important;
         animation:none !important;
+      }
+    }
+
+    /* Responsif dikit untuk layar kecil */
+    @media (max-width: 640px){
+      .dash-cards .card .body{
+        font-size: 26px;
+      }
+      .dash-cards .card .foot{
+        flex-direction:column;
+        align-items:flex-start;
       }
     }
   </style>

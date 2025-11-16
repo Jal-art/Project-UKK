@@ -13,15 +13,22 @@ class TransaksiController extends Controller
 {
     public function index(Request $req)
     {
+        // ambil ?tanggal= dari query
         $tanggal = $req->query('tanggal');
 
-        $q = Transaksi::query()
-            ->when($tanggal, fn($s) =>
-                $s->whereDate('tanggal', Carbon::parse($tanggal)->toDateString())
-            )
-            ->orderByDesc('id_transaksi');
+        // kalau tidak diisi, pakai HARI INI
+        if (!$tanggal) {
+            $tanggal = Carbon::today()->toDateString(); // 2025-01-01
+        } else {
+            // normalisasi ke format tanggal
+            $tanggal = Carbon::parse($tanggal)->toDateString();
+        }
 
-        $items = $q->paginate(10);
+        // SELALU filter by tanggal (baik default hari ini maupun pilihan user)
+        $items = Transaksi::query()
+            ->whereDate('tanggal', $tanggal)
+            ->orderByDesc('id_transaksi')
+            ->paginate(10);
 
         return view('transaksi.index', compact('items', 'tanggal'));
     }

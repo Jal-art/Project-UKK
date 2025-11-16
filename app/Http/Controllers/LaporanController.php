@@ -14,9 +14,14 @@ class LaporanController extends Controller
         $from = $request->query('from');
         $to   = $request->query('to');
 
-        // normalisasi ke tanggal (Y-m-d) atau null
-        $fromDate = $from ? Carbon::parse($from)->toDateString() : null;
-        $toDate   = $to   ? Carbon::parse($to)->toDateString()   : null;
+        // JIKA user belum pilih apa-apa → pakai HARI INI utk from & to
+        if (!$from && !$to) {
+            $fromDate = $toDate = Carbon::today()->toDateString();
+        } else {
+            // normalisasi ke tanggal (Y-m-d) atau null
+            $fromDate = $from ? Carbon::parse($from)->toDateString() : null;
+            $toDate   = $to   ? Carbon::parse($to)->toDateString()   : null;
+        }
 
         // query gabungan transaksis + detail_transaksis
         $q = DB::table('transaksis as t')

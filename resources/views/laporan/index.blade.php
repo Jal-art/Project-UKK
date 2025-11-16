@@ -64,16 +64,16 @@
     <table class="lap-table">
       <thead>
         <tr>
-          <th style="width: 180px;">Tanggal</th>
-          <th style="width: 160px;">Jumlah Transaksi</th>
-          <th style="width: 160px;">Jumlah Penjualan (Qty)</th>
-          <th class="num" style="width: 200px;">Total Transaksi</th>
+          <th class="col-tgl">Tanggal</th>
+          <th class="col-num">Jumlah Transaksi</th>
+          <th class="col-num">Jumlah Penjualan (Qty)</th>
+          <th class="col-num">Total Transaksi</th>
         </tr>
       </thead>
       <tbody>
         @forelse($rows as $r)
           <tr>
-            <td>{{ Carbon::parse($r->tanggal)->format('Y-m-d') }}</td>
+            <td class="cell-tgl">{{ Carbon::parse($r->tanggal)->format('d/m/Y') }}</td>
             <td class="num">{{ (int)($r->trx_count ?? 0) }}</td>
             <td class="num">{{ (int)($r->qty_sum   ?? 0) }}</td>
             <td class="num">Rp {{ number_format((int)($r->total_sum ?? 0),0,',','.') }}</td>
@@ -231,6 +231,8 @@
     border-collapse:separate;
     border-spacing:0;
   }
+
+  /* HEADER TABEL */
   .lap-table thead th{
     background:#f9fafb;
     padding:11px 12px;
@@ -238,20 +240,36 @@
     font-weight:600;
     color:#111827;
     border-bottom:1px solid #e5e7eb;
-    text-align:left;
+    vertical-align:middle;
+    white-space:nowrap;
+    text-align:center;  /* header sejajar tengah */
   }
+  .col-tgl{
+    width:180px;
+  }
+  .col-num{
+    width:160px;
+  }
+
+  /* ISI TABEL */
   .lap-table tbody td{
     padding:10px 12px;
     font-size:13px;
     border-bottom:1px solid #f3f4f6;
+    vertical-align:middle;
+    text-align:center; /* isi sejajar tengah */
   }
-  .lap-table tbody tr:nth-child(odd):not(.lap-total-row) td{
-    background:#fcfcfc;
+  .cell-tgl{
+    text-align:center;
   }
-  .lap-table .num{
-    text-align:right;
+  .num{
+    text-align:center;
     font-weight:600;
     color:#111827;
+  }
+
+  .lap-table tbody tr:nth-child(odd):not(.lap-total-row) td{
+    background:#fcfcfc;
   }
 
   .lap-empty{
@@ -264,6 +282,9 @@
     background:#fefce8;
     font-weight:600;
     border-top:1px solid #e5e7eb;
+  }
+  .lap-total-label{
+    text-align:center;
   }
 
   @media(max-width:720px){

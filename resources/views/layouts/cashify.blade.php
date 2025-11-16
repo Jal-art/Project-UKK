@@ -80,11 +80,17 @@
       letter-spacing:.2px;
     }
 
+    /* GARIS SIDEBAR */
     .sline{
       height:1px;
       background:#1f2937;
       margin:12px 0;
       opacity:.8;
+    }
+    /* garis yang di dalam menu (bawah Dashboard & bawah Laporan) */
+    .sline-menu{
+      margin:12px 4px;
+      opacity:.7;
     }
 
     /* MENU */
@@ -513,7 +519,10 @@
       <div class="logo"><img src="{{ asset('images/logo.png') }}" alt="Logo"></div>
       <div class="title">Cashlfy</div>
     </div>
+
+    {{-- Garis pertama (di atas Dashboard) --}}
     <div class="sline"></div>
+
     <nav class="menu">
       <a href="{{ route('dashboard') }}"
          class="{{ request()->routeIs('dashboard') ? 'is-active' : '' }}">
@@ -523,6 +532,10 @@
         </svg>
         <span class="text">Dashboard</span>
       </a>
+
+      {{-- Garis kedua (di bawah Dashboard) --}}
+      <div class="sline sline-menu"></div>
+
       <a href="{{ route('produk.index') }}"
          class="{{ request()->routeIs('produk.*') ? 'is-active' : '' }}">
         <svg class="icon" viewBox="0 0 24 24" fill="none">
@@ -548,6 +561,9 @@
         </svg>
         <span class="text">Laporan</span>
       </a>
+
+      {{-- Garis ketiga (di bawah Laporan) --}}
+      <div class="sline sline-menu"></div>
     </nav>
   </aside>
 
