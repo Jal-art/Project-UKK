@@ -9,6 +9,9 @@
     <div class="alert err">{{ $errors->first() }}</div>
   @endif
 
+  {{-- alert client-side (qty melebihi stok, dll) --}}
+  <div id="jsAlert" class="alert err" style="display:none;"></div>
+
   <div class="trx-box">
     <form id="trxForm" method="POST" action="{{ route('transaksi.store') }}" novalidate autocomplete="off">
       @csrf
@@ -137,7 +140,7 @@
       padding:16px;
       max-width:980px;
       width:100%;
-      margin:0 auto;            /* <<< BIAR DI TENGAH */
+      margin:0 auto;
       box-shadow:0 3px 0 rgba(0,0,0,.08), 0 12px 22px rgba(0,0,0,.08);
       opacity:0;transform:translateY(18px) scale(.97);
       animation:cardIn .7s cubic-bezier(.18,.89,.32,1.28) .12s forwards;
@@ -185,8 +188,12 @@
       opacity:0;transform:translateY(10px);animation:itemIn .45s ease-out .3s forwards;
     }
 
+    .table-shell{
+      overflow:auto;border-radius:12px;background:#fff;border:1px solid #e5e7eb;
+    }
+
     .d-table{
-      width:100%;border-collapse:separate;border-spacing:0;
+      width:100%;border-collapse:separate;border-spacing:0;min-width:720px;
     }
     .d-table thead th{
       background:#f3f4f6;color:#111;text-align:left;font-weight:600;
@@ -223,7 +230,6 @@
       padding:10px 12px;
       opacity:0;transform:translateY(10px);animation:itemIn .45s ease-out .36s forwards;
     }
-    .pay-item{}
     .pay-label{
       font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;
     }
@@ -252,6 +258,7 @@
       .pay-panel{grid-template-columns:1fr}
       .actions{flex-direction:column}
       .btn{width:100%;text-align:center}
+      .d-table{min-width:0}
     }
 
     input:-webkit-autofill{
@@ -283,6 +290,7 @@
       const totalEl  = document.getElementById('grandTotal');
       const holder   = document.getElementById('itemsHolder');
       const stokInfo = document.getElementById('stokInfo');
+      const jsAlert  = document.getElementById('jsAlert');
 
       const totalInput     = document.getElementById('totalInput');
       const uangBayarInput = document.getElementById('uangBayarInput');
@@ -291,6 +299,18 @@
       const cart = new Map(); // key: produk_id -> {nama, harga, qty, stok}
 
       function rupiah(n){ return 'Rp ' + (n||0).toLocaleString('id-ID'); }
+
+      function showJsAlert(msg){
+        if(!jsAlert) return;
+        jsAlert.textContent = msg;
+        jsAlert.style.display = 'block';
+      }
+
+      function hideJsAlert(){
+        if(!jsAlert) return;
+        jsAlert.style.display = 'none';
+        jsAlert.textContent = '';
+      }
 
       function recomputePayment(sum){
         totalInput.value = rupiah(sum);
@@ -344,10 +364,15 @@
         const s = opt?.dataset?.stok;
         stokInfo.textContent = s ? `Stok tersedia: ${s}` : '';
       }
-      select.addEventListener('change', updateStokInfo);
+      select.addEventListener('change', () => {
+        hideJsAlert();
+        updateStokInfo();
+      });
       updateStokInfo();
 
       addBtn.addEventListener('click', () => {
+        hideJsAlert();
+
         const pid = select.value;
         if(!pid) return;
         const opt   = select.options[select.selectedIndex];
@@ -357,7 +382,7 @@
         const q     = Math.max(1, parseInt(qtyEl.value || '1', 10));
 
         if(q > stok){
-          alert('Qty melebihi stok! Tersedia: ' + stok);
+          showJsAlert('Qty melebihi stok! Tersedia: ' + stok);
           return;
         }
 
@@ -365,7 +390,7 @@
           const cur = cart.get(pid);
           const newQty = cur.qty + q;
           if(newQty > stok){
-            alert('Qty melebihi stok! Tersedia: ' + stok);
+            showJsAlert('Qty melebihi stok! Tersedia: ' + stok);
             return;
           }
           cur.qty = newQty;
@@ -379,6 +404,7 @@
       body.addEventListener('click', (e) => {
         const id = e.target?.dataset?.id;
         if(e.target.classList.contains('badge-del') && id){
+          hideJsAlert();
           cart.delete(id);
           render();
         }

@@ -44,7 +44,7 @@
     <table class="trx-table-detail">
       <thead>
         <tr>
-          <th>Produk</th>
+          <th class="col-name">Produk</th>
           <th class="col-num">Harga</th>
           <th class="col-num">Qty</th>
           <th class="col-num">Subtotal</th>
@@ -61,7 +61,7 @@
             $sub    = (int)($d->sub_total ?? 0);
           @endphp
           <tr>
-            <td>
+            <td class="cell-name">
               {{ $nama }}
               @if($ukuran) • {{ $ukuran }} @endif
               @if($warna)  • {{ $warna }} @endif
@@ -128,19 +128,46 @@
     .trx-table-detail{
       width:100%;border-collapse:separate;border-spacing:0;
     }
+
+    /* HEADER: kolom produk kiri, angka kanan, tinggi sejajar */
     .trx-table-detail thead th{
-      background:#f3f4f6;text-align:left;font-weight:600;
+      background:#f3f4f6;font-weight:600;
       padding:11px 12px;border-bottom:1px solid #e5e7eb;font-size:14px;
+      vertical-align:middle;
+      white-space:nowrap;
     }
+    .trx-table-detail thead th.col-name{
+      text-align:left;
+    }
+    .trx-table-detail thead th.col-num{
+      text-align:right;
+    }
+
+    /* BODY: baris sejajar, teks produk kiri, angka kanan */
     .trx-table-detail tbody td{
       padding:10px 12px;border-bottom:1px solid #f0f2f5;font-size:14px;
+      vertical-align:middle;
     }
     .trx-table-detail tbody tr:hover td{
       background:#fafafa;
     }
-    .col-num{width:140px;text-align:right}
-    .num{text-align:right;font-weight:700;color:#111}
-    .empty{text-align:center;color:#6b7280;padding:12px}
+
+    .col-name{
+      min-width:200px;
+    }
+    .col-num{
+      width:140px;
+    }
+
+    .cell-name{
+      text-align:left;
+    }
+    .num{
+      text-align:right;font-weight:700;color:#111;
+    }
+    .empty{
+      text-align:center;color:#6b7280;padding:12px;
+    }
 
     .btn{
       border:none;cursor:pointer;padding:9px 14px;border-radius:999px;

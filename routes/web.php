@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/transaksi/{transaksi}/struk', [TransaksiController::class, 'struk'])
          ->name('transaksi.struk');
 
-    // LAPORAN (index saja)
+    // Laporan
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
 });
 

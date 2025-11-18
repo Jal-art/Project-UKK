@@ -114,6 +114,11 @@
     font-weight:600;
     font-size:20px;
     color:#111827;
+
+    /* animasi judul */
+    opacity:0;
+    transform:translateY(-10px);
+    animation:lapTitleIn .6s cubic-bezier(.18,.89,.32,1.28) .04s forwards;
   }
 
   .lap-panel{
@@ -122,7 +127,23 @@
     padding:14px;
     box-shadow:0 10px 25px rgba(15,23,42,.08);
     border:1px solid #e5e7eb;
+
+    /* animasi card utama */
+    opacity:0;
+    transform:translateY(18px) scale(.97);
+    animation:lapCardIn .7s cubic-bezier(.18,.89,.32,1.28) .10s forwards;
   }
+
+  .lap-panel-header,
+  .lap-period-summary,
+  .lap-table-wrap{
+    opacity:0;
+    transform:translateY(10px);
+    animation:lapItemIn .45s ease-out forwards;
+  }
+  .lap-panel-header{ animation-delay:.20s; }
+  .lap-period-summary{ animation-delay:.26s; }
+  .lap-table-wrap{ animation-delay:.32s; }
 
   .lap-panel-header{
     display:flex;
@@ -295,6 +316,34 @@
     .lap-period-summary{
       flex-direction:column;
       align-items:flex-start;
+    }
+  }
+
+  /* Animasi khusus laporan */
+  @keyframes lapTitleIn{
+    0%{opacity:0;transform:translateY(-12px)}
+    100%{opacity:1;transform:translateY(0)}
+  }
+  @keyframes lapCardIn{
+    0%{opacity:0;transform:translateY(22px) scale(.96)}
+    60%{opacity:1;transform:translateY(-2px) scale(1.01)}
+    100%{opacity:1;transform:translateY(0) scale(1)}
+  }
+  @keyframes lapItemIn{
+    0%{opacity:0;transform:translateY(10px)}
+    100%{opacity:1;transform:translateY(0)}
+  }
+
+  /* Jika user reduce motion, matikan animasi */
+  @media (prefers-reduced-motion: reduce){
+    .lap-head h2,
+    .lap-panel,
+    .lap-panel-header,
+    .lap-period-summary,
+    .lap-table-wrap{
+      opacity:1 !important;
+      transform:none !important;
+      animation:none !important;
     }
   }
 </style>
