@@ -39,7 +39,7 @@
       <table class="produk-table">
         <thead>
           <tr>
-            <th class="col-id">ID</th>
+            <th class="col-id">ID Produk</th>
             <th class="col-nama">Nama</th>
             <th class="col-ukuran">Ukuran</th>
             <th class="col-warna">Warna</th>

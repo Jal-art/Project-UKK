@@ -29,7 +29,7 @@
       <table class="trx-table">
         <thead>
           <tr>
-            <th class="col-id">ID</th>
+            <th class="col-id">ID Transaksi</th>
             <th class="col-date">Tanggal</th>
             <th class="col-num">Bayar</th>
             <th class="col-num">Kembalian</th>

@@ -41,14 +41,4 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('login.show');
     }
-
-    public function dashboard()
-    {
-        // Bisa inject data nyata nanti
-        return view('kasir.dashboard', [
-            'stokCount' => 400,
-            'transaksiCount' => 30,
-            'terjualCount' => 40,
-        ]);
-    }
 }
