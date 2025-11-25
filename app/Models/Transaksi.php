@@ -24,15 +24,15 @@ class Transaksi extends Model
         'total_harga' => 'decimal:2',
         'uang_bayar'  => 'decimal:2',
         'kembalian'   => 'decimal:2',
+        // created_at / updated_at otomatis Carbon
     ];
 
-    // ID unik tampilan seperti di produk: TRX-000001
+    // Kode unik tampilan: TRX-000001
     public function getKodeAttribute(): string
     {
-        return 'TRX-'.str_pad((string)$this->id_transaksi, 6, '0', STR_PAD_LEFT);
+        return 'TRX-' . str_pad((string)$this->id_transaksi, 6, '0', STR_PAD_LEFT);
     }
 
-    // Relasi opsional ke kasir (jika ada model Kasir)
     public function kasir()
     {
         return $this->belongsTo(\App\Models\Kasir::class, 'id_kasir', 'id_kasir');

@@ -13,18 +13,14 @@ class TransaksiController extends Controller
 {
     public function index(Request $req)
     {
-        // ambil ?tanggal= dari query
         $tanggal = $req->query('tanggal');
 
-        // kalau tidak diisi, pakai HARI INI
         if (!$tanggal) {
-            $tanggal = Carbon::today()->toDateString(); // 2025-01-01
+            $tanggal = Carbon::today()->toDateString();
         } else {
-            // normalisasi ke format tanggal
             $tanggal = Carbon::parse($tanggal)->toDateString();
         }
 
-        // SELALU filter by tanggal (baik default hari ini maupun pilihan user)
         $items = Transaksi::query()
             ->whereDate('tanggal', $tanggal)
             ->orderByDesc('id_transaksi')
@@ -41,7 +37,6 @@ class TransaksiController extends Controller
 
     public function store(Request $r)
     {
-        // Validasi
         $data = $r->validate([
             'tanggal'            => 'required|date',
             'items'              => 'required|array|min:1',
@@ -50,7 +45,6 @@ class TransaksiController extends Controller
             'uang_bayar'         => 'required|numeric|min:0',
         ]);
 
-        // Siapkan produk
         $map      = collect($data['items']);
         $prodIds  = $map->pluck('produk_id')->all();
         $produkBy = Produk::whereIn('id_produk', $prodIds)->get()->keyBy('id_produk');
@@ -62,23 +56,19 @@ class TransaksiController extends Controller
             $pid = (int) $row['produk_id'];
             $qty = (int) $row['qty'];
 
-            /** @var \App\Models\Produk|null $prod */
             $prod = $produkBy[$pid] ?? null;
-            if (!$prod) {
-                abort(422, 'Produk tidak ditemukan.');
-            }
+            if (!$prod) abort(422, 'Produk tidak ditemukan.');
 
-            if ($qty > (int) $prod->stok) {
+            if ($qty > (int)$prod->stok) {
                 return back()
                     ->withErrors("Qty untuk {$prod->nama_produk} melebihi stok ({$prod->stok}).")
                     ->withInput();
             }
 
-            $harga = (int) $prod->harga;
+            $harga = (int)$prod->harga;
             $sub   = $harga * $qty;
             $grand += $sub;
 
-            // ========== SNAPSHOT DATA PRODUK KE DETAIL (CATATAN) ==========
             $detailRows[] = [
                 'id_produk'    => $pid,
                 'nama_produk'  => $prod->nama_produk,
@@ -88,19 +78,17 @@ class TransaksiController extends Controller
                 'jumlah'       => $qty,
                 'sub_total'    => $sub,
             ];
-            // ==============================================================
         }
 
-        // Validasi bayar
-        $uangBayar  = (float) $data['uang_bayar'];
+        $uangBayar = (float)$data['uang_bayar'];
         if ($uangBayar < $grand) {
             return back()->withErrors('Uang bayar kurang dari total.')->withInput();
         }
         $kembalian = $uangBayar - $grand;
 
-        // Simpan transaksi + detail + kurangi stok
-        DB::transaction(function () use ($r, $detailRows, $grand, $uangBayar, $kembalian) {
-            /** @var \App\Models\Transaksi $trx */
+        // ✅ simpan transaksi + detail + stok (WIB ikut config app)
+        $trx = DB::transaction(function () use ($r, $detailRows, $grand, $uangBayar, $kembalian) {
+
             $trx = Transaksi::create([
                 'id_kasir'    => auth()->user()->id_kasir ?? 1,
                 'tanggal'     => Carbon::parse($r->input('tanggal'))->toDateString(),
@@ -109,7 +97,7 @@ class TransaksiController extends Controller
                 'total_harga' => $grand,
             ]);
 
-            $now = now();
+            $now = now(); // ✅ now() pakai Asia/Jakarta kalau config app sudah bener
 
             $rows = array_map(function ($x) use ($trx, $now) {
                 return [
@@ -130,22 +118,25 @@ class TransaksiController extends Controller
                 DB::table('detail_transaksis')->insert($rows);
             }
 
-            // Kurangi stok produk
             foreach ($detailRows as $x) {
                 DB::table('produks')
                     ->where('id_produk', $x['id_produk'])
                     ->decrement('stok', $x['jumlah']);
             }
+
+            return $trx;
         });
 
-        return redirect()->route('transaksi.index')->with('ok', 'Transaksi berhasil disimpan.');
+        // ✅ setelah transaksi langsung ke struk
+        return redirect()
+            ->route('transaksi.struk', $trx->id_transaksi)
+            ->with('ok', 'Transaksi berhasil disimpan.');
     }
 
     public function show(Transaksi $transaksi)
     {
         $displayNo = $this->getDisplayNoAsc($transaksi->id_transaksi);
 
-        // Cuma ambil dari detail_transaksis (catatan snapshot)
         $detail = DetailTransaksi::where('id_transaksi', $transaksi->id_transaksi)
             ->orderBy('id_detail_transaksi')
             ->get();
@@ -157,7 +148,6 @@ class TransaksiController extends Controller
     {
         $displayNo = $this->getDisplayNoAsc($transaksi->id_transaksi);
 
-        // Juga dari detail_transaksis saja
         $detail = DetailTransaksi::where('id_transaksi', $transaksi->id_transaksi)
             ->orderBy('id_detail_transaksi')
             ->get();
@@ -167,7 +157,7 @@ class TransaksiController extends Controller
 
     public function destroy(Transaksi $transaksi)
     {
-        $transaksi->delete(); // detail ikut terhapus via FK cascade dari transaksi
+        $transaksi->delete();
         return back()->with('ok', 'Transaksi dihapus');
     }
 
