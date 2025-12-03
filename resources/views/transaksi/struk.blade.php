@@ -15,7 +15,7 @@ $waktu = $transaksi->created_at; // jam real transaksi
         ->translatedFormat('l, d/m/Y H:i') }}
 </div>
 
-{{-- Header (disembunyikan saat print) --}}
+{{-- Header --}}
 <div class="screen-toolbar no-print">
   <h2 class="ttl">Struk #{{ $displayNo }} ({{ $kode }})</h2>
   <div class="btns">
